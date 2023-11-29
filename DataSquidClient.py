@@ -8,6 +8,7 @@ import binascii
 class DataSquidClient:
     def __init__(self, adaptor:DatabaseAdaptor):
         self.adaptor = adaptor
+        self.adaptor.flush()
         self.users = []
         self.datasets = []
     def createNewUser(self, user:User):
@@ -42,6 +43,7 @@ class DataSquidClientEx:
         self.adaptor = adaptor
         self.redis = redis
         self.redis.flush()
+        self.adaptor.flush()
         self.users = {}
         self.datasets = []
 

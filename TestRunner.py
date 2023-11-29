@@ -7,7 +7,7 @@ from time import time
 import uuid
 
 class Stress:
-    def __init__(self, client : DataSquidClient | DataSquidClientEx, total_users:int, logged_in_users:int, total_datasets:int, total_iterations:int, seed = 0):
+    def __init__(self, client : DataSquidClient | DataSquidClientEx, total_users:int, logged_in_users:int, total_datasets:int, datasets_downloads:int, total_iterations:int, seed = 0):
         random.seed(seed)
         self.users = []
         self.datasets = []
@@ -24,6 +24,7 @@ class Stress:
 
         self.total_datasets = total_datasets
         self.logged_in_users = logged_in_users
+        self.dataset_downloads = datasets_downloads
         self.total_iterations = total_iterations
 
 
@@ -35,8 +36,9 @@ class Stress:
 
         for iteration in range(self.total_iterations):
             for user in self.users[:self.logged_in_users]:
-                chosen_dataset = random.randint(0, self.total_datasets - 1)
-                self.client.downloadDatasetForUser(user.userId, chosen_dataset)
+                for datasetDownloads in range(self.dataset_downloads):
+                    chosen_dataset = random.randint(0, self.total_datasets - 1)
+                    self.client.downloadDatasetForUser(user.userId, chosen_dataset)
             
             self.client.updateStats()
 
@@ -47,7 +49,7 @@ class Stress:
 
         return (end_time - start_time)
 
-    def initRunTesting(useEx:bool, total:int, loggedIn:int, datasets:int, iterations:int):
+    def initRunTesting(useEx:bool, total:int, loggedIn:int, datasets:int, iterations:int, perIterDownloads:int):
         client = DataSquidClientEx(DatabaseAdaptor(DatabaseOperator()), RedisAdaptor()) if useEx else DataSquidClient(DatabaseAdaptor(DatabaseOperator()))
     
         stress = Stress(
@@ -55,12 +57,13 @@ class Stress:
             total_users=total,
             logged_in_users=loggedIn,
             total_datasets=datasets,
-            total_iterations=iterations
+            total_iterations=iterations,
+            datasets_downloads=perIterDownloads,
         )
 
         return stress.run_testing()
     
     
 if __name__ == '__main__':
-    print(f'Elapsed: {Stress.initRunTesting(False, 10000, 1000, 1000, 100)}')
+    print(f'Elapsed: {Stress.initRunTesting(False, 100, 100, 10, 10, 1)}')
 

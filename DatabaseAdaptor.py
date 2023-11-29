@@ -52,6 +52,14 @@ class DatabaseAdaptor:
         ret = self.operator.executeQuery("SELECT userId FROM Users WHERE isUserLoggedIn(userId) = TRUE;", None, needFetch=True)
 
         return [] if ret is None else [x[0].hex() for x in ret]
+    
+    def flush(self):
+        self.operator.executeQuery("SET FOREIGN_KEY_CHECKS = 0;", None)
+        self.operator.executeQuery("DELETE FROM users;", None)
+        self.operator.executeQuery("DELETE FROM UserActions;", None)
+        self.operator.executeQuery("DELETE FROM UserStatistics;", None)
+        self.operator.executeQuery("SET FOREIGN_KEY_CHECKS = 1;", None)
+
     def queryLatestUserStatistics(self, userId):
         ret = self.operator.executeQuery("CALL getLastUserStatistic(?);", (bytes.fromhex(userId.replace('-', '')), ), needFetch=True)
         if ret is None or len(ret) < 1: return None
